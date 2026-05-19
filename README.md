@@ -5,10 +5,11 @@
 A powerful Telegram bot for managing support tickets and topics with ease. Organize, track, and respond to support requests efficiently within Telegram groups.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-v18+-green)](https://nodejs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-v20+-green)](https://nodejs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED)](https://www.docker.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0+-blue)](https://www.typescriptlang.org/)
 
-[Features](#features) • [Installation](#installation) • [Configuration](#configuration) • [Usage](#usage) • [Development](#development)
+[Features](#features) • [Quick Start](#quick-start) • [Container Usage](#container-usage) • [Configuration](#configuration) • [CI/CD](#cicd)
 
 </div>
 
@@ -17,6 +18,8 @@ A powerful Telegram bot for managing support tickets and topics with ease. Organ
 ## 📋 Overview
 
 **SupportBoard** is a feature-rich Telegram bot designed to streamline support ticket management. It allows teams to create, organize, and manage support topics directly within Telegram groups. With multi-language support, customizable topic limits, and flexible configuration options, SupportBoard is perfect for communities, teams, and businesses looking to centralize their support infrastructure.
+
+The project is now distributed and deployed as a **containerized application** using Docker and GitHub Container Registry (GHCR).
 
 ## ✨ Features
 
@@ -29,13 +32,15 @@ A powerful Telegram bot for managing support tickets and topics with ease. Organ
 - ⚙️ **Configurable Limits** - Set maximum topic limits and manage storage retention
 - 🧹 **System Messages** - Optional system message filtering to keep conversations clean
 - 📊 **Data Management** - Comprehensive data handling and retrieval system
+- 🐳 **Container-First Runtime** - Multi-stage Docker build for reproducible deployments
+- 🚀 **Automated Image Publishing** - CI builds and pushes images to GHCR
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Node.js** v18 or higher
-- **npm** v9 or higher
+- **Docker** 24+
+- **Docker Compose** v2+
 - **Telegram Bot Token** (obtain from [BotFather](https://t.me/botfather))
 - **Telegram Group ID** where the bot will operate
 
@@ -47,20 +52,66 @@ A powerful Telegram bot for managing support tickets and topics with ease. Organ
    cd SupportBoard
    ```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables**
+2. **Create environment file**
    ```bash
    cp .env.defaults .env
    ```
 
-4. **Build the project**
+3. **Edit `.env` with your Telegram values**
+
+4. **Start with Docker Compose**
    ```bash
-   npm run build
+   docker compose up -d --build
    ```
+
+5. **Check logs**
+   ```bash
+   docker compose logs -f supportboard
+   ```
+
+## 🐳 Container Usage
+
+### Run locally via Docker Compose
+
+```bash
+docker compose up -d --build
+```
+
+Stop the service:
+
+```bash
+docker compose down
+```
+
+The service configuration is defined in `docker-compose.yml`:
+- image: `ghcr.io/xxanderwp/supportboard:latest`
+- mounted storage: `./.storage:/app/.storage`
+- environment source: `.env`
+
+### Run prebuilt image from GHCR
+
+```bash
+docker pull ghcr.io/xxanderwp/supportboard:latest
+docker run -d \
+  --name supportboard \
+  --restart unless-stopped \
+  --env-file .env \
+  -v "$(pwd)/.storage:/app/.storage" \
+  ghcr.io/xxanderwp/supportboard:latest
+```
+
+### Build image manually
+
+```bash
+docker build -t ghcr.io/xxanderwp/supportboard:local -f Dockerfile .
+```
+
+## 🧱 Container Architecture
+
+`Dockerfile` uses a **multi-stage build**:
+- `builder` stage installs dependencies and runs `npm run build`
+- `runner` stage contains only runtime artifacts (`/app/bundle`)
+- persistent storage is exposed through volume `/app/.storage`
 
 ## ⚙️ Configuration
 
@@ -120,28 +171,33 @@ npm run dev
 npm run test
 ```
 
-### Getting Started
+### Local development (without Docker)
 
-1. **Start the bot in development mode:**
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Build in watch mode:**
+   ```bash
+   npm run watch
+   ```
+
+3. **Run backend in dev mode:**
    ```bash
    npm run dev
    ```
 
-2. **In production, build and run:**
-   ```bash
-   npm run build
-   npm start
-   ```
-
-3. **Interact with the bot:**
-   - Add the bot to your Telegram group
-   - Use bot commands to create and manage support topics
-   - The bot will post updates to your configured group
+Note: production deployment is intended to run in containers.
 
 ## 🏗️ Project Structure
 
 ```
 SupportBoard/
+├── .github/workflows/
+│   └── build-on-main.yml        # CI build/publish workflow (GHCR)
+├── Dockerfile                   # Multi-stage container build
+├── docker-compose.yml           # Local/prod compose runtime
 ├── src/
 │   ├── backend/
 │   │   ├── index.ts              # Backend entry point
@@ -172,6 +228,7 @@ SupportBoard/
 
 - **Language:** TypeScript
 - **Runtime:** Node.js
+- **Container Runtime:** Docker
 - **Bundler:** Webpack
 - **Linter:** ESLint
 - **Formatter:** Prettier
@@ -240,6 +297,24 @@ Set your preferred language in the `.env` file using the `LANG` variable.
 - `nodemon` - Development auto-reload
 - `@types/node-telegram-bot-api` - Type definitions
 
+## 🔄 CI/CD
+
+GitHub Actions workflow in `.github/workflows/build-on-main.yml` automates image release on pushes to:
+- `main` → alias tag `latest`
+- `beta` → alias tag `beta`
+- `develop` → alias tag `preview`
+
+Pipeline behavior:
+1. Reads `version` from `package.json`
+2. Checks if Git tag exists, and creates it if missing
+3. Checks if image `ghcr.io/xxanderwp/supportboard:<version>` already exists
+4. If image does not exist: builds and pushes both `<version>` and branch alias tags
+5. If image exists: re-tags existing version image to branch alias
+
+Published image:
+- `ghcr.io/xxanderwp/supportboard:<version>`
+- `ghcr.io/xxanderwp/supportboard:latest|beta|preview`
+
 ## 📝 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
@@ -257,11 +332,17 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 
 ### Topics not saving?
 - Check that storage directory (`.storage`) has write permissions
+- If using Docker, ensure `./.storage:/app/.storage` volume is mounted
 - Verify `TOPIC_LIMITS` is configured appropriately
 
 ### Language not changing?
 - Confirm `LANG` variable is set to a supported language (en/uk/ru)
 - Ensure language files exist in `src/lang/`
+
+### Container does not start?
+- Validate `.env` exists and contains required values
+- Check container logs: `docker compose logs -f supportboard`
+- Ensure port/network policies on host allow Telegram API access
 
 ## 📧 Support
 
