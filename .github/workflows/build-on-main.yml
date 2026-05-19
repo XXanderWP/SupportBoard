@@ -1,0 +1,138 @@
+name: Build On Main
+
+on:
+  push:
+    branches:
+      - main
+      - beta
+      - develop
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      alias: ${{ steps.alias.outputs.alias }}
+      git_tag_exists: ${{ steps.tag_check.outputs.git_tag_exists }}
+      container_exists: ${{ steps.container_check.outputs.container_exists }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Determine alias tag by branch
+        id: alias
+        run: |
+          BRANCH="${{ github.ref_name }}"
+          if [ "$BRANCH" = "main" ]; then
+            ALIAS="latest"
+          elif [ "$BRANCH" = "beta" ]; then
+            ALIAS="beta"
+          elif [ "$BRANCH" = "develop" ]; then
+            ALIAS="preview"
+          fi
+          echo "alias=$ALIAS" >> "$GITHUB_OUTPUT"
+          echo "Branch '$BRANCH' → alias tag '$ALIAS'"
+
+      - name: Check existing git tag
+        id: tag_check
+        run: |
+          git fetch --tags --force
+          VERSION="${{ steps.version.outputs.version }}"
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "git_tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "Git tag '$VERSION' already exists"
+          else
+            echo "git_tag_exists=false" >> "$GITHUB_OUTPUT"
+            echo "Git tag '$VERSION' not found — will be created"
+          fi
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if container image already exists
+        id: container_check
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          IMAGE="ghcr.io/xxanderwp/supportboard:$VERSION"
+          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "container_exists=true" >> "$GITHUB_OUTPUT"
+            echo "Image '$IMAGE' found — will only retag"
+          else
+            echo "container_exists=false" >> "$GITHUB_OUTPUT"
+            echo "Image '$IMAGE' not found — full build required"
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.container_exists == 'false'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Git tag (if not exists)
+        if: needs.prepare.outputs.git_tag_exists == 'false'
+        run: |
+          VERSION=${{ needs.prepare.outputs.version }}
+          git tag "$VERSION"
+          git push origin "$VERSION"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ghcr.io/xxanderwp/supportboard:${{ needs.prepare.outputs.version }} \
+            -t ghcr.io/xxanderwp/supportboard:${{ needs.prepare.outputs.alias }} \
+            -f Dockerfile .
+
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/xxanderwp/supportboard:${{ needs.prepare.outputs.version }}
+          docker push ghcr.io/xxanderwp/supportboard:${{ needs.prepare.outputs.alias }}
+
+  retag:
+    runs-on: ubuntu-latest
+    needs: prepare
+    if: needs.prepare.outputs.container_exists == 'true'
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull versioned image, retag and push alias
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          ALIAS="${{ needs.prepare.outputs.alias }}"
+          BASE="ghcr.io/xxanderwp/supportboard"
+
+          echo "Pulling $BASE:$VERSION"
+          docker pull "$BASE:$VERSION"
+
+          echo "Retagging → $BASE:$ALIAS"
+          docker tag "$BASE:$VERSION" "$BASE:$ALIAS"
+          docker push "$BASE:$ALIAS"

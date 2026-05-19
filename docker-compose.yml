@@ -1,0 +1,12 @@
+services:
+  supportboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/xxanderwp/supportboard:latest
+    container_name: supportboard
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./.storage:/app/.storage
