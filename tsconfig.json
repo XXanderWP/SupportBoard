@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "Node16",
+    "target": "es2021",
+    "allowJs": true,
+    "lib": ["es2021", "dom", "dom.iterable", "esnext"],
+    "moduleResolution": "node16",
+    "sourceMap": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*", "src/types/**/*"]
+}
