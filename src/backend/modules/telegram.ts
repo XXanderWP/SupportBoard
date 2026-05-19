@@ -201,6 +201,11 @@ export const Telegram = new (class extends TelegramBot {
 
     if (process.env.KEEP_CLOSED_TOPICS !== 'true') {
       this.deleteForumTopic(String(data.groupId), parseInt(topic.topic_id));
+    } else {
+      this.editForumTopic(String(data.groupId), parseInt(topic.topic_id), {
+        name: `#${topic.user_id} | ${topic.user_login || 'Unknown'} | Closed`,
+        icon_custom_emoji_id: TopicStatus.Closed,
+      }).catch(() => {});
     }
 
     Storage.UpdateData(
