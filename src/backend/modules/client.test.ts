@@ -14,8 +14,10 @@ const setupClientModule = () => {
       handlers.message = cb;
     }),
     on: jest.fn((event: string, cb: MessageHandler | CallbackHandler) => {
-      if (event === 'edited_message') handlers.edited_message = cb as MessageHandler;
-      if (event === 'callback_query') handlers.callback_query = cb as CallbackHandler;
+      if (event === 'edited_message')
+        handlers.edited_message = cb as MessageHandler;
+      if (event === 'callback_query')
+        handlers.callback_query = cb as CallbackHandler;
     }),
     GetTopicIdByUserId: jest.fn(),
     CreateTopic: jest.fn(),

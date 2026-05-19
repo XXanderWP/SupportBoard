@@ -24,8 +24,10 @@ const setupAdminModule = () => {
       handlers.message = cb;
     }),
     on: jest.fn((event: string, cb: MessageHandler | CallbackHandler) => {
-      if (event === 'edited_message') handlers.edited_message = cb as MessageHandler;
-      if (event === 'callback_query') handlers.callback_query = cb as CallbackHandler;
+      if (event === 'edited_message')
+        handlers.edited_message = cb as MessageHandler;
+      if (event === 'callback_query')
+        handlers.callback_query = cb as CallbackHandler;
     }),
     sendMessage: jest.fn(() => Promise.resolve({ message_id: 901 })),
     copyMessage: jest.fn(() => Promise.resolve({ message_id: 902 })),

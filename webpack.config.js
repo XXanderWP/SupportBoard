@@ -1,9 +1,7 @@
 const Dotenv = require('dotenv-webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-const https = require('https');
 const path = require('path');
-const fs = require('fs');
 const webpack = require('webpack');
 const { EnvTypesPlugin } = require('@xxanderwp/env-types-webpack-plugin');
 

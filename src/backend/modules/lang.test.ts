@@ -28,6 +28,8 @@ describe('backend lang module', () => {
 
   it('returns localized text by message language', () => {
     const message = { from: { language_code: 'uk' } } as any;
-    expect(LangStringMsg(message, 'topic.info')).toBe('💬 Інформація про тікет');
+    expect(LangStringMsg(message, 'topic.info')).toBe(
+      '💬 Інформація про тікет'
+    );
   });
 });

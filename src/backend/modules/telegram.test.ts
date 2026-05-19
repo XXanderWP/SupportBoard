@@ -14,7 +14,11 @@ const setupTelegramModule = (initial?: Partial<StorageShape>) => {
     on: jest.fn(),
     getMe: jest.fn(async () => ({ id: 1, username: 'bot' })),
     getChatMember: jest.fn(async () => ({ status: 'administrator' })),
-    getChat: jest.fn(async () => ({ is_forum: true, id: '42', username: 'user' })),
+    getChat: jest.fn(async () => ({
+      is_forum: true,
+      id: '42',
+      username: 'user',
+    })),
     createForumTopic: jest.fn(),
     sendMessage: jest.fn(async () => ({ message_id: 100 })),
     pinChatMessage: jest.fn(async () => true),
@@ -38,17 +42,18 @@ const setupTelegramModule = (initial?: Partial<StorageShape>) => {
   jest.doMock('node-telegram-bot-api', () => {
     class MockTelegramBot {
       constructor(_token: string, _options: { polling: boolean }) {}
-      on = (...args: unknown[]) => botMethods.on(...args);
-      getMe = (...args: unknown[]) => botMethods.getMe(...args);
-      getChatMember = (...args: unknown[]) => botMethods.getChatMember(...args);
-      getChat = (...args: unknown[]) => botMethods.getChat(...args);
-      createForumTopic = (...args: unknown[]) => botMethods.createForumTopic(...args);
-      sendMessage = (...args: unknown[]) => botMethods.sendMessage(...args);
-      pinChatMessage = (...args: unknown[]) => botMethods.pinChatMessage(...args);
-      deleteForumTopic = (...args: unknown[]) => botMethods.deleteForumTopic(...args);
-      editForumTopic = (...args: unknown[]) => botMethods.editForumTopic(...args);
-      editMessageText = (...args: unknown[]) => botMethods.editMessageText(...args);
-      editMessageCaption = (...args: unknown[]) => botMethods.editMessageCaption(...args);
+      on = (...args: [string, ...any[]]) => botMethods.on(...args);
+      getMe = (...args: []) => botMethods.getMe(...args);
+      getChatMember = (...args: []) => botMethods.getChatMember(...args);
+      getChat = (...args: []) => botMethods.getChat(...args);
+      createForumTopic = (...args: []) => botMethods.createForumTopic(...args);
+      sendMessage = (...args: []) => botMethods.sendMessage(...args);
+      pinChatMessage = (...args: []) => botMethods.pinChatMessage(...args);
+      deleteForumTopic = (...args: []) => botMethods.deleteForumTopic(...args);
+      editForumTopic = (...args: []) => botMethods.editForumTopic(...args);
+      editMessageText = (...args: []) => botMethods.editMessageText(...args);
+      editMessageCaption = (...args: []) =>
+        botMethods.editMessageCaption(...args);
     }
 
     return {
@@ -66,7 +71,8 @@ const setupTelegramModule = (initial?: Partial<StorageShape>) => {
   }));
 
   jest.doMock('./lang', () => ({
-    LangString: (key: string, ...args: unknown[]) => `L:${key}:${args.join('|')}`,
+    LangString: (key: string, ...args: unknown[]) =>
+      `L:${key}:${args.join('|')}`,
     LangStringMsg: (_msg: unknown, key: string) => `LM:${key}`,
   }));
 
@@ -189,18 +195,19 @@ describe('telegram module', () => {
 
   it('ends dialog and deletes forum topic when closed topics are disabled', () => {
     process.env.KEEP_CLOSED_TOPICS = 'false';
-    const { Telegram, storageMock, botMethods, getStorage } = setupTelegramModule({
-      topics: [
-        {
-          user_id: '42',
-          topic_id: '77',
-          answered: false,
-          last_message_time: 1,
-          message_pairs: [],
-        },
-      ],
-      removeTopics: ['10'],
-    });
+    const { Telegram, storageMock, botMethods, getStorage } =
+      setupTelegramModule({
+        topics: [
+          {
+            user_id: '42',
+            topic_id: '77',
+            answered: false,
+            last_message_time: 1,
+            message_pairs: [],
+          },
+        ],
+        removeTopics: ['10'],
+      });
 
     const result = Telegram.EndDialog({ chat: { id: '42' } } as any, 500);
 

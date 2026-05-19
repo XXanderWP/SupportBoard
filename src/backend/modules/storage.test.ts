@@ -7,8 +7,13 @@ const importStorageWithCwd = (
   cwd: string
 ): {
   Storage: {
-    Get: <T extends keyof typeof StorageDefault>(key: T) => (typeof StorageDefault)[T];
-    UpdateData: (newData: Partial<typeof StorageDefault>, save?: boolean) => void;
+    Get: <T extends keyof typeof StorageDefault>(
+      key: T
+    ) => (typeof StorageDefault)[T];
+    UpdateData: (
+      newData: Partial<typeof StorageDefault>,
+      save?: boolean
+    ) => void;
     Save: () => void;
     OnLoad: (callback: () => void) => void;
   };
@@ -27,7 +32,9 @@ const importStorageWithCwd = (
 
 describe('Storage module', () => {
   it('loads default structure when .storage is missing', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'supportboard-storage-'));
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'supportboard-storage-')
+    );
 
     const { Storage } = importStorageWithCwd(tmpDir);
 
@@ -36,7 +43,9 @@ describe('Storage module', () => {
   });
 
   it('loads data from existing .storage file', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'supportboard-storage-'));
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'supportboard-storage-')
+    );
     const initial = {
       topics: [
         {
@@ -50,7 +59,11 @@ describe('Storage module', () => {
       removeTopics: ['42'],
     };
 
-    fs.writeFileSync(path.join(tmpDir, '.storage'), JSON.stringify(initial), 'utf-8');
+    fs.writeFileSync(
+      path.join(tmpDir, '.storage'),
+      JSON.stringify(initial),
+      'utf-8'
+    );
 
     const { Storage } = importStorageWithCwd(tmpDir);
 
@@ -59,7 +72,9 @@ describe('Storage module', () => {
   });
 
   it('updates in-memory data and saves when requested', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'supportboard-storage-'));
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'supportboard-storage-')
+    );
     const originalCwd = process.cwd();
 
     const { Storage } = importStorageWithCwd(tmpDir);
@@ -76,7 +91,9 @@ describe('Storage module', () => {
   });
 
   it('runs OnLoad callback immediately after initialization', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'supportboard-storage-'));
+    const tmpDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'supportboard-storage-')
+    );
     const { Storage } = importStorageWithCwd(tmpDir);
     const callback = jest.fn();
 

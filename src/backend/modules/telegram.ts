@@ -1,8 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { GetTelegramData } from './data';
 import { Storage } from './storage';
-import { TopicColor, TopicStatus } from '../../shared/topic';
-import { sleep, time } from '@xxanderwp/jstoolkit';
+import { TopicStatus } from '../../shared/topic';
+import { time } from '@xxanderwp/jstoolkit';
 import { LangString, LangStringMsg } from './lang';
 import { GenerateInlineKeyboard } from './keycontrol';
 import { StorageDefault } from '../../shared/storage';

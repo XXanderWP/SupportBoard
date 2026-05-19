@@ -21,7 +21,7 @@ Telegram.HandleMessage(async message => {
         reply_to_message_id: message.message_id,
         message_thread_id: message.message_thread_id,
       }
-    ).catch(err => {});
+    ).catch(() => {});
     setTimeout(() => {
       Telegram.deleteForumTopic(
         String(Telegram.data.groupId),
@@ -50,7 +50,7 @@ Telegram.HandleMessage(async message => {
           inline_keyboard: GenerateInlineKeyboard(false),
         },
       }
-    ).catch(err => {});
+    ).catch(() => {});
   }
 
   const user_id = topic.user_id;
@@ -65,14 +65,14 @@ Telegram.HandleMessage(async message => {
         inline_keyboard: GenerateInlineKeyboard(true),
       },
     }
-  ).catch(err => {});
+  ).catch(() => {});
 
   if (!newMsg) {
     newMsg = await Telegram.sendMessage(user_id, message.text || '', {
       reply_markup: {
         inline_keyboard: GenerateInlineKeyboard(true),
       },
-    }).catch(err => {});
+    }).catch(() => {});
     failedToCopy = true;
   }
 
@@ -86,9 +86,7 @@ Telegram.HandleMessage(async message => {
           inline_keyboard: GenerateInlineKeyboard(false),
         },
       }
-    ).catch(err => {
-      console.error('Failed to send failed copy message to client:', err);
-    });
+    ).catch(() => {});
   } else {
     if (failedToCopy) {
       Telegram.sendMessage(
@@ -100,12 +98,7 @@ Telegram.HandleMessage(async message => {
             inline_keyboard: GenerateInlineKeyboard(false),
           },
         }
-      ).catch(err => {
-        console.error(
-          'Failed to send failed copy info message to support:',
-          err
-        );
-      });
+      ).catch(() => {});
     }
 
     topic = Telegram.topics.find(
@@ -142,7 +135,7 @@ Telegram.on('callback_query', async query => {
   if (query.from.is_bot) return;
   if (!message.message_thread_id) return;
   const command = Object.entries(AdminKeys).find(
-    ([key, value]) => key === query.data?.trim().split('|')[0]
+    ([key]) => key === query.data?.trim().split('|')[0]
   );
 
   if (!command) return;
@@ -154,7 +147,7 @@ Telegram.on('callback_query', async query => {
   Telegram.answerCallbackQuery(query.id, {
     show_alert: typeof res === 'string',
     text: typeof res === 'string' ? res : undefined,
-  }).catch(err => {});
+  }).catch(() => {});
 });
 
 const handleAdminCommand = async (

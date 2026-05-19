@@ -17,7 +17,7 @@ Telegram.HandleMessage(async message => {
         {
           reply_to_message_id: message.message_id,
         }
-      ).catch(err => {});
+      ).catch(() => {});
       return;
     }
     const topicId = await Telegram.CreateTopic(message);
@@ -28,7 +28,7 @@ Telegram.HandleMessage(async message => {
         {
           reply_to_message_id: message.message_id,
         }
-      ).catch(err => {});
+      ).catch(() => {});
       return;
     }
     await sleep(500);
@@ -53,9 +53,7 @@ Telegram.HandleMessage(async message => {
         inline_keyboard: GenerateInlineKeyboard(false),
       },
     }
-  ).catch(err => {
-    console.error('Failed to copy message to topic:', err);
-  });
+  ).catch(() => {});
 
   if (!newMsg) {
     failedToCopy = true;
@@ -112,7 +110,7 @@ Telegram.on('callback_query', async query => {
   if (!query.from) return;
   if (query.from.is_bot) return;
   const command = Object.entries(UsersKeys).find(
-    ([key, value]) => key === query.data?.trim().split('|')[0]
+    ([key]) => key === query.data?.trim().split('|')[0]
   );
 
   if (!command) return;
@@ -124,7 +122,7 @@ Telegram.on('callback_query', async query => {
   Telegram.answerCallbackQuery(query.id, {
     show_alert: typeof res === 'string',
     text: typeof res === 'string' ? res : undefined,
-  }).catch(err => {});
+  }).catch(() => {});
 });
 
 const handleUserCommand = async (
