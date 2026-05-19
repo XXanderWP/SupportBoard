@@ -175,6 +175,9 @@ npm run test:watch
 
 # Run tests with coverage report
 npm run test:coverage
+
+# Run tests in CI mode (serial + coverage)
+npm run test:ci
 ```
 
 ### Local development (without Docker)

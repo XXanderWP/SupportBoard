@@ -8,10 +8,10 @@ module.exports = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   coverageThreshold: {
     global: {
-      branches: 5,
-      functions: 5,
-      lines: 5,
-      statements: 5,
+      branches: 30,
+      functions: 45,
+      lines: 60,
+      statements: 60,
     },
   },
   transform: {

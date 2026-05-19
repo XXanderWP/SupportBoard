@@ -10,7 +10,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --runInBand --coverage"
+    "test:ci": "jest --runInBand --coverage",
+    "lint": "eslint ./src --cache --fix --debug",
+    "lint:test": "eslint ./src --cache"
   },
   "repository": {
     "type": "git",
