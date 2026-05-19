@@ -1,5 +1,3 @@
-const Dotenv = require('dotenv-webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 const { EnvTypesPlugin } = require('@xxanderwp/env-types-webpack-plugin');
@@ -22,13 +20,6 @@ const tsRule = () => {
  */
 const makeDefaultPart = (target, local, env) => {
   const plugins = [];
-
-  plugins.push(
-    new Dotenv({
-      systemvars: true,
-      defaults: true,
-    })
-  );
 
   plugins.push(
     new webpack.DefinePlugin({

@@ -10,3 +10,5 @@ services:
       - .env
     volumes:
       - ./.storage:/app/.storage
+      - ./.env:/app/.env
+      - ./.env.defaults:/app/.env.defaults
