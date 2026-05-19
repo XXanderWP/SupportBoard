@@ -6,6 +6,12 @@ on:
       - main
       - beta
       - develop
+      
+  pull_request:
+    branches:
+      - main
+      - beta
+      - develop
 
 permissions:
   contents: write
@@ -44,6 +50,7 @@ jobs:
 
   prepare:
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     outputs:
       version: ${{ steps.version.outputs.version }}
       alias: ${{ steps.alias.outputs.alias }}
