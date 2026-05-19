@@ -1,6 +1,8 @@
 # SupportBoard
 
+
 <div align="center">
+<img src="./logo.png" width="50%" />
 
 A powerful Telegram bot for managing support tickets and topics with ease. Organize, track, and respond to support requests efficiently within Telegram groups.
 
