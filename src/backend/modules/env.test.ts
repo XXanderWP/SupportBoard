@@ -1,7 +1,10 @@
 const importEnvModule = (existingFiles: string[]) => {
-  const config = jest.fn();
-  const existsSync = jest.fn((filePath: string) => existingFiles.includes(filePath));
+  const config = jest.fn(() => ({ parsed: { SAMPLE: 'value' } }));
+  const existsSync = jest.fn((filePath: string) =>
+    existingFiles.includes(filePath)
+  );
   const resolve = jest.fn((...parts: string[]) => parts.join('/'));
+  const log = jest.spyOn(console, 'log').mockImplementation(() => {});
 
   jest.doMock('fs', () => ({
     __esModule: true,
@@ -35,6 +38,8 @@ const importEnvModule = (existingFiles: string[]) => {
     }
   });
 
+  log.mockRestore();
+
   return {
     config,
     existsSync,
@@ -49,21 +54,25 @@ describe('env module', () => {
     jest.clearAllMocks();
   });
 
-  it('loads the first existing env file in priority order', () => {
-    const { config, existsSync, resolve, thrown } = importEnvModule([
-      `${process.cwd()}/.env.local`,
-    ]);
+  it.each(['.env', '.env.defaults'])(
+    'loads %s when it is the first available env file',
+    fileName => {
+      const filePath = `${process.cwd()}/${fileName}`;
+      const { config, existsSync, resolve, thrown } = importEnvModule([
+        filePath,
+      ]);
 
-    expect(thrown).toBeUndefined();
-    expect(existsSync).toHaveBeenCalledWith(`${process.cwd()}/.env`);
-    expect(existsSync).toHaveBeenCalledWith(`${process.cwd()}/.env.local`);
-    expect(config).toHaveBeenCalledTimes(1);
-    expect(config).toHaveBeenCalledWith({
-      path: `${process.cwd()}/.env.local`,
-    });
-    expect(resolve).toHaveBeenCalledWith(process.cwd(), '.env');
-    expect(resolve).toHaveBeenCalledWith(process.cwd(), '.env.local');
-  });
+      expect(thrown).toBeUndefined();
+      expect(existsSync).toHaveBeenCalledWith(`${process.cwd()}/.env`);
+      expect(existsSync).toHaveBeenCalledWith(filePath);
+      expect(config).toHaveBeenCalledTimes(1);
+      expect(config).toHaveBeenCalledWith({
+        path: filePath,
+      });
+      expect(resolve).toHaveBeenCalledWith(process.cwd(), '.env');
+      expect(resolve).toHaveBeenCalledWith(process.cwd(), fileName);
+    }
+  );
 
   it('throws when no env file exists', () => {
     const { config, thrown } = importEnvModule([]);
