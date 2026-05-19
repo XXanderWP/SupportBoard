@@ -180,6 +180,9 @@ npm run test:coverage
 npm run test:ci
 ```
 
+Coverage reports are generated into `coverage/` locally.
+In GitHub Actions, the workflow uploads `coverage/` as an artifact (`coverage-report-<run_id>`).
+
 ### Local development (without Docker)
 
 1. **Install dependencies:**

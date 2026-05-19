@@ -5,6 +5,8 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   clearMocks: true,
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'json-summary', 'html'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   coverageThreshold: {
     global: {
