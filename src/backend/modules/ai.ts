@@ -1,3 +1,4 @@
+import '../../shared/test';
 import fs from 'fs';
 import OpenAI from 'openai';
 import {
