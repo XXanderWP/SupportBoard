@@ -107,11 +107,13 @@ describe('telegram module', () => {
   let consoleLogSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    jest.useFakeTimers();
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {
     consoleLogSpy.mockRestore();
+    jest.useRealTimers();
     process.env.KEEP_CLOSED_TOPICS = originalKeep;
     jest.resetModules();
     jest.clearAllMocks();
@@ -193,7 +195,7 @@ describe('telegram module', () => {
     expect(result).toContain('topic.key.assign.already');
   });
 
-  it('ends dialog and deletes forum topic when closed topics are disabled', () => {
+  it('ends dialog and deletes forum topic when closed topics are disabled', async () => {
     process.env.KEEP_CLOSED_TOPICS = 'false';
     const { Telegram, storageMock, botMethods, getStorage } =
       setupTelegramModule({
@@ -209,9 +211,11 @@ describe('telegram module', () => {
         removeTopics: ['10'],
       });
 
-    const result = Telegram.EndDialog({ chat: { id: '42' } } as any, 500);
+    const result = await Telegram.EndDialog({ chat: { id: '42' } } as any, 500);
 
-    expect(result).toContain('topic.message.admin.endDialog');
+    jest.runAllTimers();
+
+    expect(result).toContain('topic.message.notify.endDialog');
     expect(botMethods.deleteForumTopic).toHaveBeenCalledWith('100', 77);
     expect(storageMock.UpdateData).toHaveBeenCalledWith(
       {
@@ -239,6 +243,8 @@ describe('telegram module', () => {
     });
 
     Telegram.EndDialog({ chat: { id: '42' } } as any, 500);
+
+    jest.runAllTimers();
 
     expect(botMethods.deleteForumTopic).not.toHaveBeenCalled();
     expect(storageMock.UpdateData).toHaveBeenCalledWith(

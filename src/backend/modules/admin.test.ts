@@ -130,7 +130,7 @@ describe('admin module', () => {
     expect(Telegram.deleteForumTopic).toHaveBeenCalledWith('100', 77);
   });
 
-  it('warns when admin is not assigned owner and still forwards message', async () => {
+  it('warns when admin is not assigned owner and does not forward message', async () => {
     const { handlers, Telegram, topic } = setupAdminModule();
 
     await handlers.message?.({
@@ -146,8 +146,8 @@ describe('admin module', () => {
       expect.stringContaining('L:topic.message.admin.notYour:'),
       expect.objectContaining({ message_thread_id: 77 })
     );
-    expect(Telegram.copyMessage).toHaveBeenCalled();
-    expect(Telegram.UpdateTopicInfo).toHaveBeenCalledWith(topic);
+    expect(Telegram.copyMessage).not.toHaveBeenCalled();
+    expect(Telegram.UpdateTopicInfo).not.toHaveBeenCalledWith(topic);
   });
 
   it('syncs edited admin messages for existing topic', () => {
