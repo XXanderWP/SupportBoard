@@ -51,6 +51,7 @@ Telegram.HandleMessage(async message => {
         },
       }
     ).catch(() => {});
+    return;
   }
 
   const user_id = topic.user_id;
