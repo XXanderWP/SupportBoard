@@ -10,3 +10,7 @@ services:
       - .env
     volumes:
       - ./.storage:/app/.storage
+      - ./.ai_chat_history:/app/.ai_chat_history
+      - ./.ai_history:/app/.ai_history
+      - ./.knowledge:/app/.knowledge
+      - /app/.knowledge/example
