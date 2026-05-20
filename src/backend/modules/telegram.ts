@@ -6,6 +6,7 @@ import { time } from '@xxanderwp/jstoolkit';
 import { LangString, LangStringMsg } from './lang';
 import { GenerateInlineKeyboard } from './keycontrol';
 import { StorageDefault } from '../../shared/storage';
+import { AiChat } from './ai';
 const data = GetTelegramData();
 
 export const Telegram = new (class extends TelegramBot {
@@ -124,12 +125,21 @@ export const Telegram = new (class extends TelegramBot {
             icon_color: number;
           };
 
-          const msgText = LangString(
+          let msgText = LangString(
             'topic.createmessage',
             user_id,
             user_login || 'Unknown',
             user_login ? `https://t.me/${user_login}` : 'Unknown'
           );
+          const oldAiSummaryCache = AiChat.GetOldSummaryCacheMessages(user_id);
+          if (oldAiSummaryCache.length > 0) {
+            msgText += `\n\n${LangString('topic.createmessageSummaryInfo')}\n\n${oldAiSummaryCache
+              .map(
+                id =>
+                  `- https://t.me/c/${String(data.groupId).substring(4)}/${id}`
+              )
+              .join('\n')}`;
+          }
           await this.sendMessage(String(data.groupId), msgText, {
             message_thread_id: topic_data.message_thread_id,
             disable_web_page_preview: true,
@@ -149,7 +159,7 @@ export const Telegram = new (class extends TelegramBot {
           });
           await this.sendMessage(
             String(user_id),
-            LangStringMsg(message, 'topic.message.client.create'),
+            LangString('topic.message.client.create'),
             {
               disable_web_page_preview: true,
               reply_markup: {
@@ -187,24 +197,59 @@ export const Telegram = new (class extends TelegramBot {
       : topics?.find(t => t.user_id === String(message.chat.id));
     if (!topic) return undefined;
 
-    await this.sendMessage(
-      String(data.groupId),
-      LangString(
-        'topic.message.admin.endDialog',
-        LangString(
-          by_admin
-            ? 'topic.message.admin.endDialog.byAdmin'
-            : 'topic.message.admin.endDialog.byClient'
-        )
-      ),
-      {
-        message_thread_id: parseInt(topic.topic_id),
-      }
-    );
-    await this.sendMessage(
-      String(topic.user_id),
-      LangString('topic.message.client.endDialog')
-    );
+    setTimeout(async () => {
+      try {
+        await this.sendMessage(
+          String(data.groupId),
+          LangString(
+            'topic.message.admin.endDialog',
+            LangString(
+              by_admin
+                ? 'topic.message.admin.endDialog.byAdmin'
+                : 'topic.message.admin.endDialog.byClient'
+            )
+          ),
+          {
+            message_thread_id: parseInt(topic.topic_id),
+          }
+        );
+      } catch (error) {}
+      try {
+        await this.sendMessage(
+          String(topic.user_id),
+          LangString('topic.message.client.endDialog')
+        );
+      } catch (error) {}
+    }, 100);
+
+    if (AiChat.activeSummary) {
+      setTimeout(async () => {
+        try {
+          console.log(`Generating dialog summary for user ${topic.user_id}...`);
+          const summary = await AiChat.GenerateSummaryDialog(topic.user_id);
+          if (summary)
+            this.sendMessage(
+              this.data.groupId,
+              `${LangString('ai.summaryDialogTitle', topic.user_login ? `@${topic.user_login}` : '')} ${topic.user_id}:\n\n${summary}`,
+              {
+                disable_web_page_preview: true,
+                disable_notification: true,
+              }
+            ).then(msg => {
+              if (msg) {
+                Storage.UpdateData({
+                  ai_summary_cache: [
+                    ...(Storage.Get('ai_summary_cache') || []),
+                    [topic.user_id, String(msg.message_id)],
+                  ],
+                });
+              }
+            });
+        } catch (error) {
+          // Error handling is important, but we don't want to disrupt the main flow if summary generation fails. We can log the error for debugging purposes.
+        }
+      }, 1000);
+    }
 
     setTimeout(() => {
       if (process.env.KEEP_CLOSED_TOPICS !== 'true') {

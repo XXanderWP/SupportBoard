@@ -1,6 +1,6 @@
 // ⚠️ AUTO-GENERATED FILE — DO NOT EDIT
 // Source: .env.defaults
-// Generated: 2026-05-20T18:26:13
+// Generated: 2026-05-20T21:52:26
 
 declare namespace NodeJS {
   interface ProcessEnv {
@@ -43,6 +43,14 @@ declare namespace NodeJS {
     AI_BASE_URL: string;
     AI_MAX_HISTORY_MESSAGES: string;
     AI_SAVED_MESSAGES_WHILE_COMPRESSING: string;
+    /**
+     * If enabled, after a topic is closed, the chat history will be summarized using AI and the summary will be posted to Telegram. This allows you to keep a record of the conversation without needing to keep the full chat history for closed topics.
+     */
+    AI_SUMMARY_ENABLED: string;
+    /**
+     * Include knowledge base from ./knowledge/example
+     */
+    AI_ENABLE_EXAMPLE_KNOWLEDGE_BASE: string;
   }
 }
 

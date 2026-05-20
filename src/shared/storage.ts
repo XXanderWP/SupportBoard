@@ -19,4 +19,6 @@ export const StorageDefault = {
   }[],
   /** Array of topic IDs to be removed */
   removeTopics: [] as string[],
+  /** Array of AI summary cache entries [user_id, summary message id] */
+  ai_summary_cache: [] as [string, string][],
 };

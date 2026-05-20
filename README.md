@@ -287,6 +287,7 @@ Set your preferred language in the `.env` file using the `LANG` variable.
 ### Core Modules
 
 - **admin.ts** - Administrative functions and controls
+- **ai.ts** - AI-assisted routing, context compression, and dialog summarization
 - **client.ts** - Client-side operations and interactions
 - **data.ts** - Data retrieval and manipulation
 - **keycontrol.ts** - Authentication and permission management
@@ -294,6 +295,39 @@ Set your preferred language in the `.env` file using the `LANG` variable.
 - **storage.ts** - Topic and data storage operations
 - **system.ts** - System-wide utilities and helpers
 - **telegram.ts** - Telegram bot integration and message handling
+
+### AI Module (`ai.ts`) Features
+
+- **Strict routing mode** - The model either returns `REPLY|...` or escalates via `COMMAND|OPERATOR_SWITCH`.
+- **Layered knowledge loading** - Base sections (`knowledge`, `project`, `role`, `rules`) are loaded from `knowledge/` and optionally from `knowledge/example/`.
+- **Custom knowledge injection** - Any extra files in `knowledge/` (and optional `knowledge/example/`) are appended to the system prompt automatically.
+- **JS knowledge file support** - `.js` files can export objects with `name`, `data`, and `noCache`.
+- **Dynamic JS content** - `data` may be either a string or an async function, which allows runtime-generated context.
+- **Knowledge cache with opt-out** - Loaded knowledge is cached in memory, but `noCache: true` forces reload on each prompt build.
+- **Per-user memory** - Message history is persisted in `.ai_history/<user_id>.json`.
+- **Automatic context compression** - When history exceeds `AI_MAX_HISTORY_MESSAGES`, old context is summarized and replaced with compact memory + recent context.
+- **Configurable retention after compression** - Keeps the latest `AI_SAVED_MESSAGES_WHILE_COMPRESSING` messages in raw form.
+- **Support dialog timeline** - Separate chat timeline is stored in `.ai_chat_history/<user_id>.json` with `who`, `message`, and `timestamp`.
+- **Conversation summary generator** - Builds short support-focused summaries (intent, assistant answers, constraints, decisions, unresolved issues) and then clears temporary chat history.
+- **Language-aware responses** - Uses current bot language from `LANG` integration via the language module.
+- **Language-aware summaries** - Summary generation can enforce output language via current `LANG`.
+- **Safety-first fallback** - On API or IO errors, methods fail safely and return `undefined` instead of breaking the bot flow.
+
+### AI Environment Variables
+
+Required when AI is enabled:
+
+- `AI_ANSWER_ENABLED` - Enables AI routing/answering (`true`/`false`)
+- `AI_API_KEY` or `.openai` file - API key source
+- `AI_ANSWER_MODEL` - Model name for chat completions
+- `AI_MAX_HISTORY_MESSAGES` - Max history size before compression
+- `AI_SAVED_MESSAGES_WHILE_COMPRESSING` - Count of recent messages preserved after compression
+
+Optional:
+
+- `AI_BASE_URL` - Custom OpenAI-compatible endpoint
+- `AI_SUMMARY_ENABLED` - Enables post-dialog summary generation
+- `AI_ENABLE_EXAMPLE_KNOWLEDGE_BASE` - Includes `knowledge/example/` files into prompt context
 
 ## 🔗 Dependencies
 

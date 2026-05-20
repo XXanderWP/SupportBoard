@@ -37,9 +37,9 @@ Telegram.HandleMessage(async message => {
           if (response.startsWith('REPLY|')) {
             response = response.replace('REPLY|', '').trim();
           }
-          Telegram.sendMessage(String(message.chat.id), response, {
-            reply_to_message_id: message.message_id,
-          }).catch(() => {});
+          Telegram.sendMessage(String(message.chat.id), response).catch(
+            () => {}
+          );
           return;
         }
       }
@@ -115,6 +115,18 @@ Telegram.HandleMessage(async message => {
           },
         }
       );
+    } else {
+      if (
+        AiChat.activeSummary &&
+        message.text &&
+        message.text.trim().length > 0
+      ) {
+        AiChat.AddMessageToChatHistory(
+          topic.user_id,
+          'user',
+          message.text.trim()
+        );
+      }
     }
   }
 });

@@ -13,6 +13,10 @@ if (!getAllLangs().includes(DefaultLang)) {
   DefaultLang = 'en';
 }
 
+export const GetLang = () => {
+  return DefaultLang;
+};
+
 export const DetectLangByMessage = (message: TelegramBot.Message): langType => {
   const code = message.from?.language_code;
   const allLangs = getAllLangs();

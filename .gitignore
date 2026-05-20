@@ -5,6 +5,7 @@
 /.group
 /.openai
 /.ai_history
+/.ai_chat_history
 /.storage
 /.lang
 /coverage

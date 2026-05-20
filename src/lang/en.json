@@ -1,6 +1,7 @@
 {
     "topic.createmessage": "CONTACT INFORMATION\nID: %1%\nLogin: %2%\nLink: %3%",
     "topic.infomessage": "CONTACT INFORMATION\nID: %1%\nLogin: %2%\nLink: %3%\nAssigned employee: %4%",
+    "topic.createmessageSummaryInfo": "Information about previous tickets",
     "topic.no_admin": "not assigned",
     "topic.no_client": "⚠️ The client has blocked the bot or deleted their account",
     "topic.info": "💬 Ticket information",
@@ -28,5 +29,6 @@
     "topic.message.admin.dialogNotExist": "🚫 This ticket is already closed. The message was not sent. The ticket will be deleted automatically when the closed ticket storage limit is exceeded",
     "topic.message.client.create": "✅ Ticket successfully created. A support team member will contact you shortly, please wait",
     "topic.message.client.create.limit": "🚫 Unfortunately, all operators are busy. Please try creating a ticket later",
-    "topic.message.client.create.startIgnore": "✅ Welcome! To get started, simply send a message to the bot. A free operator will respond shortly. We are always ready to help you!"
+    "topic.message.client.create.startIgnore": "✅ Welcome! To get started, simply send a message to the bot. A free operator will respond shortly. We are always ready to help you!",
+    "ai.summaryDialogTitle": "Dialog summary with user %1%"
 }

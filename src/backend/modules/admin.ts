@@ -3,6 +3,7 @@ import { AdminKeys, GenerateInlineKeyboard } from './keycontrol';
 import { LangString } from './lang';
 import { Telegram } from './telegram';
 import { TopicStatus } from '../../shared/topic';
+import { AiChat } from './ai';
 
 Telegram.HandleMessage(async message => {
   if (String(message.chat.id) !== String(Telegram.data.groupId)) return;
@@ -111,6 +112,18 @@ Telegram.HandleMessage(async message => {
           },
         }
       ).catch(() => {});
+    } else {
+      if (
+        AiChat.activeSummary &&
+        message.text &&
+        message.text.trim().length > 0
+      ) {
+        AiChat.AddMessageToChatHistory(
+          topic.user_id,
+          'support',
+          message.text.trim()
+        );
+      }
     }
 
     topic = Telegram.topics.find(
