@@ -2,6 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { AdminKeys, GenerateInlineKeyboard } from './keycontrol';
 import { LangString } from './lang';
 import { Telegram } from './telegram';
+import { TopicStatus } from '../../shared/topic';
 
 Telegram.HandleMessage(async message => {
   if (String(message.chat.id) !== String(Telegram.data.groupId)) return;
@@ -23,10 +24,20 @@ Telegram.HandleMessage(async message => {
       }
     ).catch(() => {});
     setTimeout(() => {
-      Telegram.deleteForumTopic(
-        String(Telegram.data.groupId),
-        message.message_thread_id as number
-      );
+      if (process.env.KEEP_CLOSED_TOPICS !== 'true') {
+        Telegram.deleteForumTopic(
+          String(Telegram.data.groupId),
+          message.message_thread_id as number
+        );
+      } else {
+        Telegram.editForumTopic(
+          String(Telegram.data.groupId),
+          message.message_thread_id as number,
+          {
+            icon_custom_emoji_id: TopicStatus.Closed,
+          }
+        ).catch(() => {});
+      }
     }, 5000);
     return;
   }
@@ -51,6 +62,7 @@ Telegram.HandleMessage(async message => {
         },
       }
     ).catch(() => {});
+    return;
   }
 
   const user_id = topic.user_id;

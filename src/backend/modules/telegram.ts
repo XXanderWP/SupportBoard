@@ -179,43 +179,49 @@ export const Telegram = new (class extends TelegramBot {
         });
     });
   }
-  EndDialog(message: TelegramBot.Message, userId: number) {
+  async EndDialog(message: TelegramBot.Message, userId: number) {
     const topics = Storage.Get('topics');
-    const topic =
-      String(message.chat.id) === String(Telegram.data.groupId)
-        ? topics?.find(t => t.topic_id === String(message.message_thread_id))
-        : topics?.find(t => t.user_id === String(message.chat.id));
+    const by_admin = String(message.chat?.id) === String(Telegram.data.groupId);
+    const topic = by_admin
+      ? topics?.find(t => t.topic_id === String(message.message_thread_id))
+      : topics?.find(t => t.user_id === String(message.chat.id));
     if (!topic) return undefined;
 
-    this.sendMessage(
+    await this.sendMessage(
       String(data.groupId),
-      LangString('topic.message.admin.endDialog'),
+      LangString(
+        'topic.message.admin.endDialog',
+        LangString(
+          by_admin
+            ? 'topic.message.admin.endDialog.byAdmin'
+            : 'topic.message.admin.endDialog.byClient'
+        )
+      ),
       {
         message_thread_id: parseInt(topic.topic_id),
       }
     );
-    this.sendMessage(
+    await this.sendMessage(
       String(topic.user_id),
       LangString('topic.message.client.endDialog')
     );
 
-    if (process.env.KEEP_CLOSED_TOPICS !== 'true') {
-      this.deleteForumTopic(String(data.groupId), parseInt(topic.topic_id));
-    } else {
-      this.editForumTopic(String(data.groupId), parseInt(topic.topic_id), {
-        name: `#${topic.user_id} | ${topic.user_login || 'Unknown'} | Closed`,
-        icon_custom_emoji_id: TopicStatus.Closed,
-      }).catch(() => {});
-    }
+    setTimeout(() => {
+      if (process.env.KEEP_CLOSED_TOPICS !== 'true') {
+        this.deleteForumTopic(String(data.groupId), parseInt(topic.topic_id));
+      } else {
+        this.editForumTopic(String(data.groupId), parseInt(topic.topic_id), {
+          name: `#${topic.user_id} | ${topic.user_login || 'Unknown'} | Closed`,
+          icon_custom_emoji_id: TopicStatus.Closed,
+        }).catch(() => {});
+      }
+    }, 500);
 
     Storage.UpdateData(
       {
         topics:
-          Storage.Get('topics')?.filter(
-            t =>
-              t.topic_id !== topic.topic_id ||
-              process.env.KEEP_CLOSED_TOPICS === 'true'
-          ) || [],
+          Storage.Get('topics')?.filter(t => t.topic_id !== topic.topic_id) ||
+          [],
         removeTopics:
           process.env.KEEP_CLOSED_TOPICS !== 'true'
             ? Storage.Get('removeTopics') || []
@@ -226,7 +232,7 @@ export const Telegram = new (class extends TelegramBot {
 
     console.log(`Dialog with user ${topic.user_id} ended and topic deleted.`);
 
-    return LangString('topic.message.admin.endDialog');
+    return LangString('topic.message.notify.endDialog');
   }
   AssignTopic(message: TelegramBot.Message, userId: number) {
     const topic_id = String(message.message_thread_id);

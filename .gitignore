@@ -6,4 +6,5 @@
 /.openai
 /.ai_history
 /.storage
+/.lang
 /coverage
