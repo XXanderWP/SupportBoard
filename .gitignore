@@ -3,5 +3,7 @@
 /.eslintcache
 /.secret
 /.group
+/.openai
+/.ai_history
 /.storage
 /coverage

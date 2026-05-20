@@ -3,6 +3,7 @@ import { Telegram } from './telegram';
 import { LangString } from './lang';
 import { GenerateInlineKeyboard, UsersKeys } from './keycontrol';
 import TelegramBot from 'node-telegram-bot-api';
+import { AiChat } from './ai';
 
 Telegram.HandleMessage(async message => {
   if (String(message.chat.id) === String(Telegram.data.groupId)) return;
@@ -20,6 +21,30 @@ Telegram.HandleMessage(async message => {
       ).catch(() => {});
       return;
     }
+
+    if (AiChat.active && message.text && message.text.trim().length > 0) {
+      Telegram.sendChatAction(String(message.chat.id), 'typing').catch(
+        () => {}
+      );
+      let response = await AiChat.SendQuestion(
+        message.from.username || message.from.first_name || 'Unknown user name',
+        String(message.from.id),
+        message.text.trim()
+      );
+
+      if (response) {
+        if (response !== AiChat.OPERATOR_COMMAND) {
+          if (response.startsWith('REPLY|')) {
+            response = response.replace('REPLY|', '').trim();
+          }
+          Telegram.sendMessage(String(message.chat.id), response, {
+            reply_to_message_id: message.message_id,
+          }).catch(() => {});
+          return;
+        }
+      }
+    }
+
     const topicId = await Telegram.CreateTopic(message);
     if (!topicId) {
       Telegram.sendMessage(
